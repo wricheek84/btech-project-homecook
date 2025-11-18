@@ -7,7 +7,7 @@ import {
   useNavigate,
 } from 'react-router-dom';
 
-import { jwtDecode } from 'jwt-decode'; // ✅ correct import
+import { jwtDecode } from 'jwt-decode'; 
 
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -36,7 +36,7 @@ const logout = () => {
   window.location.href = '/login';
 };
 
-// ✅ Auth check on app load
+
 const AuthWatcher = () => {
   const navigate = useNavigate();
 

@@ -6,7 +6,8 @@ import {
 } from '../../services/wishlistService';
 import { placeOrder } from '../../services/orderService';
 import { getCustomerAddress } from '../../services/customerService';
-import { getDishesByLocation } from '../../services/dishService';
+// ✅ 1. Import the new functions
+import { getDishesByLocation, getSimilarDishes } from '../../services/dishService'; 
 
 import { AiOutlineHeart, AiFillHeart } from 'react-icons/ai';
 import { FaUtensils } from 'react-icons/fa';
@@ -20,6 +21,10 @@ const Discover = () => {
   const [modalDish, setModalDish] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [noCity, setNoCity] = useState(false);
+
+  // ✅ 2. Add state for recommendations
+  const [similarDishes, setSimilarDishes] = useState([]);
+  const [isLoadingSimilar, setIsLoadingSimilar] = useState(false);
 
   const [filters, setFilters] = useState({
     search: '',
@@ -91,6 +96,40 @@ const Discover = () => {
     setFiltered(arr);
   }, [activeFilters, dishes]);
 
+  // ✅ 3. Add an effect to fetch recommendations when the modal opens
+  useEffect(() => {
+    // We only run this if a modal is open
+    if (modalDish && dishes.length > 0) { // ✅ Make sure dishes are loaded
+      const fetchSimilar = async () => {
+        
+        console.log(`🧠 Finding dishes similar to: ${modalDish.name} (ID: ${modalDish.id})`); // ✅ DEBUG LOG 1
+
+        setIsLoadingSimilar(true);
+        setSimilarDishes([]); // Clear old results
+        try {
+          // 1. Get the list of similar dish IDs from the AI
+          const similarIds = await getSimilarDishes(modalDish.id);
+          
+          console.log('🤖 AI returned these IDs:', similarIds); // ✅ DEBUG LOG 2
+
+          // 2. Find the full dish objects from our main 'dishes' list
+          const recommendations = dishes.filter(dish => 
+            dish.id !== modalDish.id && similarIds.includes(dish.id)
+          );
+          
+          setSimilarDishes(recommendations);
+        } catch (error) {
+          console.error('❌ Failed to fetch similar dishes:', error);
+        } finally {
+          setIsLoadingSimilar(false);
+        }
+      };
+      
+      fetchSimilar();
+    }
+  }, [modalDish, dishes]); // Run this effect when modalDish or the main dishes list changes// Run this effect when modalDish or the main dishes list changes
+
+
   const toggleWishlist = async id => {
     try {
       if (wishlist.includes(id)) {
@@ -121,6 +160,12 @@ const Discover = () => {
     if (modalDish?.cook_id) {
       navigate(`/customer/chat?cookId=${modalDish.cook_id}`);
     }
+  };
+
+  // Helper function to open modal with a new dish
+  const openModalWithDish = (dish) => {
+    setModalDish(dish);
+    setQuantity(1);
   };
 
   return (
@@ -229,14 +274,11 @@ const Discover = () => {
                       src={d.image_url || '/placeholder.jpg'}
                       alt={d.name}
                       className="w-full h-40 object-cover rounded cursor-pointer"
-                      onClick={() => {
-                        setModalDish(d);
-                        setQuantity(1);
-                      }}
+                      onClick={() => openModalWithDish(d)}
                     />
                     <h2
                       className="text-lg font-semibold mt-2 cursor-pointer"
-                      onClick={() => setModalDish(d)}
+                      onClick={() => openModalWithDish(d)}
                     >
                       {d.name}
                     </h2>
@@ -258,7 +300,8 @@ const Discover = () => {
             onClose={() => setModalDish(null)}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
           >
-            <Dialog.Panel className="bg-white rounded-lg p-6 w-full max-w-lg overflow-auto relative">
+            {/* ✅ Changed to max-h-screen to allow scrolling on small screens */}
+            <Dialog.Panel className="bg-white rounded-lg p-6 w-full max-w-lg max-h-screen overflow-auto relative">
               <button
                 className="absolute top-2 right-2 text-2xl"
                 onClick={() => setModalDish(null)}
@@ -311,6 +354,41 @@ const Discover = () => {
                   Chat with Cook
                 </button>
               </div>
+              
+              {/* ✅ 4. ADD THE NEW RECOMMENDATION SECTION */}
+              <div className="mt-6 border-t pt-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                  You might also like...
+                </h3>
+                {isLoadingSimilar && <p className="text-sm text-gray-500">Finding similar dishes...</p>}
+                
+                {/* Show this only if not loading AND there are results */}
+                {!isLoadingSimilar && similarDishes.length > 0 && (
+                  <div className="flex space-x-4 overflow-x-auto pb-2">
+                    {similarDishes.map(dish => (
+                      <div 
+                        key={dish.id} 
+                        className="w-32 flex-shrink-0 cursor-pointer"
+                        onClick={() => openModalWithDish(dish)} // Lets user click to the next dish
+                      >
+                        <img 
+                          src={dish.image_url || '/placeholder.jpg'} 
+                          alt={dish.name} 
+                          className="w-full h-20 object-cover rounded" 
+                        />
+                        <p className="text-sm font-medium truncate mt-1">{dish.name}</p>
+                        <p className="text-xs text-gray-600">₹{dish.price}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {/* Show this only if not loading AND there are NO results */}
+                {!isLoadingSimilar && similarDishes.length === 0 && (
+                  <p className="text-sm text-gray-500">No similar dishes found.</p>
+                )}
+              </div>
+              
             </Dialog.Panel>
           </Dialog>
         )}

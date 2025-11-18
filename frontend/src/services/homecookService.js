@@ -1,7 +1,6 @@
 import axios from 'axios';
 
-const API = 'https://homecook-backend-7i7u.onrender.com/api';
-
+const API = 'http://localhost:5000/api';
 
 const getAuthConfig = () => {
   const token = localStorage.getItem('token');
@@ -82,5 +81,20 @@ export const updateOrderStatus = async (orderId, status) => {
   } catch (error) {
     console.error('❌ Error updating order status:', error);
     throw error;
+  }
+};
+
+// ✅ NEW FUNCTION ADDED FOR OPENROUTER
+export const enhanceDescriptionWithAI = async (dishName, cuisine) => {
+  try {
+    const response = await axios.post(
+      `${API}/dishes/enhance-description`, // The backend route we just made
+      { dishName, cuisine }, // Request body
+      getAuthConfig()       // Auth headers
+    );
+    return response.data; // Returns { enhancedDescription: "..." }
+  } catch (error) {
+    console.error('❌ Error enhancing description with AI:', error);
+    throw error; // Let the component handle the error
   }
 };

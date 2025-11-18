@@ -6,6 +6,8 @@ import {
   updateDish,
   deleteDish,
   updateOrderStatus,
+  // ✅ 1. Import the new AI function
+  enhanceDescriptionWithAI,
 } from '../../services/homecookService';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
@@ -28,6 +30,9 @@ const HomecookDashboard = () => {
   const [image, setImage] = useState(null);
   const [editId, setEditId] = useState(null);
   const navigate = useNavigate();
+  
+  // ✅ 2. Add state for AI loading status
+  const [isEnhancing, setIsEnhancing] = useState(false);
 
   const fetchOrdersAndStats = async () => {
     try {
@@ -121,6 +126,23 @@ const HomecookDashboard = () => {
     }
   };
 
+  // ✅ 3. Create the function to handle the AI button click
+  const handleEnhanceDescription = async () => {
+    if (!formData.name) {
+      alert('Please enter a Dish Name first to generate a description.');
+      return;
+    }
+    setIsEnhancing(true);
+    try {
+      const data = await enhanceDescriptionWithAI(formData.name, formData.cuisine);
+      setFormData(prev => ({ ...prev, description: data.enhancedDescription }));
+    } catch (error) {
+      alert('Failed to get AI description. Please try again.');
+    } finally {
+      setIsEnhancing(false);
+    }
+  };
+
   useEffect(() => {
     fetchOrdersAndStats();
     fetchDishes();
@@ -164,7 +186,26 @@ const HomecookDashboard = () => {
           <input name="name" value={formData.name} onChange={handleChange} placeholder="Dish Name" className="bg-pink-600 text-white border-none px-3 py-2 rounded" />
           <input name="price" value={formData.price} onChange={handleChange} placeholder="Price (₹)" className="bg-pink-600 text-white border-none px-3 py-2 rounded" />
           <input name="cuisine" value={formData.cuisine} onChange={handleChange} placeholder="Cuisine" className="bg-pink-600 text-white border-none px-3 py-2 rounded" />
-          <input name="description" value={formData.description} onChange={handleChange} placeholder="Short Description" className="bg-pink-600 text-white border-none px-3 py-2 rounded" />
+          
+          {/* ✅ 4. Add the AI button next to the description input */}
+          <div className="relative">
+            <input 
+              name="description" 
+              value={formData.description} 
+              onChange={handleChange} 
+              placeholder="Short Description" 
+              className="w-full bg-pink-600 text-white border-none px-3 py-2 rounded" 
+            />
+            <button
+              type="button"
+              onClick={handleEnhanceDescription}
+              disabled={!formData.name || isEnhancing}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-xs bg-yellow-400 text-rose-800 font-bold px-2 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isEnhancing ? 'Enhancing...' : '✨ Enhance'}
+            </button>
+          </div>
+
           <input type="file" accept="image/*" onChange={(e) => setImage(e.target.files[0])} className="sm:col-span-2 bg-fuchsia-600 text-white border-none px-3 py-2 rounded" />
           <button type="submit" className="sm:col-span-2 bg-yellow-400 text-rose-800 font-bold rounded py-2 hover:bg-yellow-300">
             {editId ? 'Update Dish' : 'Add Dish'}

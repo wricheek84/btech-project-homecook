@@ -1,25 +1,34 @@
+// backend/routes/dishRoutes.js
+
 const express = require('express');
 const router = express.Router();
-
 
 const {
   createDish,
   getAllDishes,
   updateDish,
   getDishById,
-  deleteDish
+  deleteDish,
+  enhanceDescription,
+  getSimilarDishes, // ✅ 1. Import the new function
 } = require('../controllers/dishcontroller');
 
 const protect = require('../middlewares/authmiddleware');
 const authorizeRoles = require('../middlewares/authorizeRoles');
-const upload = require('../middlewares/multer'); // ⬅️ Add multer middleware
+const upload = require('../middlewares/multer');
 
-// 🍳 Only homecooks can create/update/delete dishes
+// AI route
+router.post('/enhance-description', protect, authorizeRoles('homecook'), enhanceDescription);
+
+// ✅ 2. ADD THE NEW RECOMMENDATION ROUTE
+router.get('/:id/similar', protect, getSimilarDishes);
+
+// 🍳 Dish management routes (Homecooks only)
 router.post(
   '/',
   protect,
   authorizeRoles('homecook'),
-  upload.single('image'), // ⬅️ This line enables image upload (field name: "image")
+  upload.single('image'),
   createDish
 );
 
