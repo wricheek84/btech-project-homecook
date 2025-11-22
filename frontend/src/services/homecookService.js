@@ -84,17 +84,28 @@ export const updateOrderStatus = async (orderId, status) => {
   }
 };
 
-// ✅ NEW FUNCTION ADDED FOR OPENROUTER
+// ✨ AI Function (OpenRouter)
 export const enhanceDescriptionWithAI = async (dishName, cuisine) => {
   try {
     const response = await axios.post(
-      `${API}/dishes/enhance-description`, // The backend route we just made
-      { dishName, cuisine }, // Request body
-      getAuthConfig()       // Auth headers
+      `${API}/dishes/enhance-description`,
+      { dishName, cuisine },
+      getAuthConfig()
     );
-    return response.data; // Returns { enhancedDescription: "..." }
+    return response.data;
   } catch (error) {
     console.error('❌ Error enhancing description with AI:', error);
-    throw error; // Let the component handle the error
+    throw error;
+  }
+};
+
+// 📈 NEW: Get Trending Dishes (AI Trend Analyzer)
+export const getTrendingDishes = async () => {
+  try {
+    const res = await axios.get(`${API}/stats/trending-dishes`, getAuthConfig());
+    return Array.isArray(res.data) ? res.data : [];
+  } catch (error) {
+    console.error('❌ Error fetching trending dishes:', error);
+    return [];
   }
 };

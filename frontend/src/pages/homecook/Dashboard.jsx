@@ -6,8 +6,8 @@ import {
   updateDish,
   deleteDish,
   updateOrderStatus,
-  // ✅ 1. Import the new AI function
   enhanceDescriptionWithAI,
+  getTrendingDishes, // ✅ Imported
 } from '../../services/homecookService';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
@@ -26,24 +26,33 @@ const HomecookDashboard = () => {
   const [orders, setOrders] = useState([]);
   const [dishes, setDishes] = useState([]);
   const [stats, setStats] = useState({ total: 0, active: 0, revenue: 0 });
+  const [trending, setTrending] = useState([]); // ✅ State for trending dishes
   const [formData, setFormData] = useState({ name: '', description: '', price: '', cuisine: '' });
   const [image, setImage] = useState(null);
   const [editId, setEditId] = useState(null);
-  const navigate = useNavigate();
   
-  // ✅ 2. Add state for AI loading status
   const [isEnhancing, setIsEnhancing] = useState(false);
+
+  const navigate = useNavigate();
 
   const fetchOrdersAndStats = async () => {
     try {
+      // Fetch Orders
       const orderData = await getHomecookOrders();
       setOrders(orderData);
+      
+      // Calculate Stats
       const total = orderData.length;
       const active = orderData.filter((o) => o.status !== 'delivered' && o.status !== 'cancelled').length;
       const revenue = orderData
         .filter((o) => ['paid', 'preparing', 'delivered'].includes(o.status))
         .reduce((sum, o) => sum + parseFloat(o.total_price), 0);
       setStats({ total, active, revenue });
+
+      // ✅ Fetch Trending Dishes
+      const trendingData = await getTrendingDishes();
+      setTrending(trendingData);
+
     } catch (error) {
       console.error('❌ Error in fetchOrdersAndStats:', error);
     }
@@ -126,7 +135,6 @@ const HomecookDashboard = () => {
     }
   };
 
-  // ✅ 3. Create the function to handle the AI button click
   const handleEnhanceDescription = async () => {
     if (!formData.name) {
       alert('Please enter a Dish Name first to generate a description.');
@@ -179,6 +187,32 @@ const HomecookDashboard = () => {
         </div>
       </div>
 
+      {/* ✅ 4. New Trending Dishes Section (Always Visible) */}
+      <div className="bg-orange-500 bg-opacity-90 rounded-2xl shadow-xl p-4 border-2 border-yellow-300 mb-6">
+        <h2 className="text-xl font-bold text-white mb-3 flex items-center">
+            📈 Trending in Your Area (Last 30 Days)
+        </h2>
+        
+        {trending.length === 0 ? (
+          <div className="text-white text-opacity-90 text-center py-4 bg-white bg-opacity-10 rounded-lg">
+            <p>No trending data yet.</p>
+            <p className="text-sm mt-1">As customers order dishes in your area, they will appear here!</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+            {trending.map((dish) => (
+              <div key={dish.dish_id} className="bg-white bg-opacity-20 rounded-lg p-3 flex flex-col items-center text-center">
+                {dish.image_url && (
+                  <img src={dish.image_url} alt={dish.name} className="w-16 h-16 rounded-full object-cover mb-2 border-2 border-white" />
+                )}
+                <p className="text-sm font-bold text-yellow-100">{dish.name}</p>
+                <p className="text-xs text-white">{dish.order_count} orders</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* Dish Management */}
       <div className="bg-purple-700 rounded-2xl shadow-xl p-4 space-y-4">
         <h2 className="text-xl font-bold text-yellow-200">🍽️ My Dishes</h2>
@@ -187,7 +221,6 @@ const HomecookDashboard = () => {
           <input name="price" value={formData.price} onChange={handleChange} placeholder="Price (₹)" className="bg-pink-600 text-white border-none px-3 py-2 rounded" />
           <input name="cuisine" value={formData.cuisine} onChange={handleChange} placeholder="Cuisine" className="bg-pink-600 text-white border-none px-3 py-2 rounded" />
           
-          {/* ✅ 4. Add the AI button next to the description input */}
           <div className="relative">
             <input 
               name="description" 
