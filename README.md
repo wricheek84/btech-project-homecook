@@ -1,92 +1,59 @@
-# React + Vite
-# 🍛 Homecook Platform
+# 🍳 HomeCook - AI-Powered Food Delivery Platform
 
-A MERN-based food delivery app that connects **homecooks** with **local customers** looking for fresh, homemade meals. Customers can browse dishes from their city, place orders, track deliveries, and manage wishlists — while homecooks can upload dishes, handle orders, and view earnings.
+HomeCook is a full-stack, hyper-local food delivery marketplace designed to bridge the gap between passionate home cooks and food lovers. It leverages modern web technologies and practical AI integration to offer a personalized, intelligent, and real-time user experience.
 
----
+## 🚀 Features
 
-## ✨ Features
+### 🤖 Intelligent AI Integration
+* **Generative AI Content Assistant:** Empowers home cooks with an AI writing assistant (powered by OpenRouter/Mistral) that auto-generates professional, SEO-friendly dish descriptions from basic inputs.
+* **Content-Based Recommendation Engine:** Solves the "cold start" problem using NLP (Natural Language Processing). The system analyzes dish metadata to suggest "Similar Dishes" to customers instantly, without needing prior order history.
+* **Hyper-Local Trend Analyzer:** A custom Business Intelligence module that uses Spatio-Temporal Analysis (SQL time-series aggregation) to show home cooks exactly which dishes are trending in their specific locality over the last 30 days.
 
-### 👨‍🍳 For Homecooks:
-- Add, edit, or delete dishes with images
-- View and update order statuses (Pending → Accepted → Delivered)
-- Dashboard shows current orders and dish listings
+### ⚡ Core Functionality
+* **Role-Based Access Control (RBAC):** Distinct, secure dashboards for Customers (Discovery & Ordering) and Homecooks (Menu & Business Management).
+* **Real-Time Communication:** Bi-directional, zero-latency chat system built on WebSockets (Socket.io) for seamless coordination between buyers and sellers.
+* **Live Order Tracking:** Real-time status updates (Pending → Accepted → Preparing → Delivered) pushed instantly to the user interface.
+* **Secure Payments:** Fully integrated Stripe Payment Gateway with webhook listeners for secure, automated transaction processing and receipt generation.
+* **Advanced Discovery:** Dynamic filtering by location, price, and cuisine with instant client-side sorting.
 
-### 🧑‍🍳 For Customers:
-- Discover dishes **only from your city**
-- Search, sort, and filter dishes by price
-- Add or remove items from your **wishlist**
-- Place orders and pay via **Stripe**
-- View all past orders and active ones
-- Manage and update **delivery address** anytime
+## 🛠️ Tech Stack
 
----
+### Frontend
+* **Framework:** React.js (Vite)
+* **Styling:** Tailwind CSS (Glassmorphism UI design)
+* **State Management:** React Hooks (useState, useEffect, useReducer)
+* **Real-Time:** Socket.io-client
+* **HTTP Client:** Axios
 
-## 🧱 Tech Stack
+### Backend
+* **Runtime:** Node.js
+* **Framework:** Express.js
+* **Database:** MySQL (Relational Data Modeling)
+* **ORM/Querying:** mysql2 with raw SQL optimizations for complex aggregations.
+* **Authentication:** JWT (JSON Web Tokens) & Bcrypt
+* **AI/NLP:** openai (configured for OpenRouter), string-similarity, moment.js
 
-| Layer        | Technology                   |
-|--------------|------------------------------|
-| Frontend     | React + Tailwind CSS         |
-| Backend      | Node.js + Express            |
-| Database     | MySQL with raw sql    |
-| Auth         | JWT-based authentication     |
-| Payments     | Stripe Integration           |
-| Hosting      | Vercel (Frontend), Render (Backend), Railway(DB) |
+### Third-Party Services
+* **AI Inference:** OpenRouter (Mistral 7B)
+* **Payments:** Stripe API
+* **Media Storage:** Cloudinary
 
----
+## 📂 Project Structure
 
-## 📁 Folder Structure
-
-homecook-platform/
-├── backend/ # Node.js API with MySQL DB
-├── frontend/ # React frontend (Vite + Tailwind)
-## 🚀 Running the App Locally
-
-### 1. Clone the repository
 ```bash
-git clone https://github.com/wricheek84/homecook-platform.git
-##start the backend
-cd homecook-platform
-cd backend
-npm install
-# Create a .env file and add:
-# DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, JWT_SECRET, STRIPE_SECRET_KEY
-node index.js
-##start the frontend
-cd ../frontend
-npm install
-npm run dev
-###  How City-based Dish Filtering Works
-
-```markdown
----
-
-## 📍 Location-Based Filtering
-
-- After login, customers enter a **delivery address**
-- The selected city is saved to their profile
-- Dishes shown on the Discover page are only from that city
-- All search/filter/sort happens within that city’s results
--customer can pay for their food through stripe payment
-## 🧑‍🍳 Homecook Dashboard Logic
-
-- The dashboard shows all dishes **created by the logged-in homecook**
-- Orders placed by customers are shown with their:
-  - Dish info
-  - Delivery address
-  - Customer contact
-- Homecooks can **update order status** from:
-  - `Pending` → `Accepted` → `Delivered`
-- Real-time status helps both customers and homecooks track progress
-- Dishes can be:
-  - Added (with image upload)
-  - Edited (update price/description/etc.)
-  - Deleted
-- Only homecooks see this dashboard — customers have a different view
-
-## 👤 Author
-
-**Wricheek Bhunia**  
-📧 wricheekbhunia599@gmail.com    
-🌐 [GitHub](https://github.com/wricheek84)  
-🔗 [LinkedIn](https://www.linkedin.com/in/wricheek-bhunia-0322b6349/)
+HOMECOOK-PLATFORM/
+├── backend/
+│   ├── config/         # DB, Cloudinary, & API configurations
+│   ├── controllers/    # Core business logic (AI, Orders, Dishes)
+│   ├── routes/         # API endpoints
+│   ├── services/       # AI & Helper services (Recommendation Engine)
+│   └── index.js        # Server entry point
+│
+├── frontend/
+│   ├── src/
+│   │   ├── components/ # Reusable UI components
+│   │   ├── pages/      # Customer & Homecook views
+│   │   ├── services/   # Axios API wrappers
+│   │   └── App.jsx     # Main routing logic
+│   └── public/
+└── README.md
